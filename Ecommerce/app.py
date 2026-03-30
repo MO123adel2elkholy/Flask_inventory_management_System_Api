@@ -104,6 +104,7 @@ schema = make_executable_schema(type_defs, query, mutation, product_obj)
 
 
 @app.route("/graphql", methods=["POST"])
+@limiter.limit("10/minute")
 def graphql_server():
     data = request.get_json()
     success, result = graphql_sync(schema, data, context_value=request, debug=True)
