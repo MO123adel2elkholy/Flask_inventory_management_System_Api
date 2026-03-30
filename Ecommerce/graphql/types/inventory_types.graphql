@@ -1,0 +1,30 @@
+ 
+ 
+ type Query {
+        users: [User!]!
+        categories: [Category!]!
+        products: [Product!]!
+        product(id: Int!): Product
+    }
+
+    type Mutation {
+        createUser(username: String!, email: String!, password: String!): User!
+        createCategory(name: String!, slug: String!): Category!
+        createProduct(name: String!, slug: String!, category_id: Int!): Product!
+    }
+
+    type User {
+        id: Int!
+        username: String!
+        email: String!
+    }
+
+    type Category {
+        id: Int!
+        name: String!
+        slug: String!
+        is_active: Boolean!
+    }
+
+
+    
