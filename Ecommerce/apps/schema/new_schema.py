@@ -25,66 +25,6 @@ class CategorySchema(ma.Schema):
     slug = ma.String(required=True)
 
 
-# ...existing code...
-
-
-# class CategorySchemaAutoCrete(ma.SQLAlchemyAutoSchema):
-#     parent_id = fields.Int(allow_none=True)
-#     children = fields.Nested(
-#         lambda: CategorySchemaAutoCrete, many=True
-#     )  # Changed to self-referential
-#     products = fields.Nested("ProductSchema", many=True)
-#     parent = fields.Nested(
-#         lambda: CategorySchemaAutoCrete(), allow_none=True
-#     )  # Changed to self
-
-#     class Meta:
-#         model = Category
-#         load_instance = True
-#         include_fk = True
-
-
-# ...existing code...
-
-
-# class CategorySchemaAuto(ma.SQLAlchemyAutoSchema):
-#     parent_id = fields.Int(allow_none=True)
-#     children = fields.Nested(
-#         lambda: CategorySchemaAuto, many=True, dump_only=True
-#     )  # Already fixed
-#     products = fields.Nested("ProductSchema", many=True, dump_only=True)
-#     parent = fields.Nested(
-#         lambda: CategorySchemaAuto(), allow_none=True
-#     )  # Changed to self
-
-#     class Meta:
-#         model = Category
-#         load_instance = True
-#         include_fk = True
-
-
-# ...existing code...
-
-
-# class ProductSchema(ma.SQLAlchemyAutoSchema):
-#     class Meta:
-#         model = Product
-#         load_instance = True
-#         include_fk = True
-
-#     # Nested relationships
-#     category = fields.Nested(
-#         CategorySchemaAuto, exclude=("products", "children")
-#     )  # Changed to CategorySchemaAuto with excludes
-#     seasonevent = fields.Nested("SeasonEventSchema", allow_none=True)
-
-
-# ...existing code...
-
-
-# Schema
-
-
 # Ecommerce.apps import marshmallow
 
 
