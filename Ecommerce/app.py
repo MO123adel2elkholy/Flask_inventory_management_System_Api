@@ -16,6 +16,10 @@ from Ecommerce.apps import create_app
 from Ecommerce.apps.models.inventory_models import User
 from Ecommerce.Exceptions import APIException
 from Ecommerce.graphql.resolvers.inventory_resover import mutation, product_obj, query
+from Ecommerce.Limiter.limiter import init_app, limiter
+
+# Initialize Limiter
+
 
 # Logging
 logger = logging.basicConfig(
@@ -23,12 +27,16 @@ logger = logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
+
 # Load GraphQL types
 type_defs = load_schema_from_path("graphql/types")
 
 # Create Flask app
 app = create_app()
 
+
+# intialize limiter
+init_app(app)
 # Reverse Proxy
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
@@ -74,6 +82,7 @@ def handle_api_exception(e):
 
 # Routes
 @app.route("/")
+@limiter.limit("10/minute")
 def hello():
     return "<h1>Welcome To Flask Development</h1>"
 

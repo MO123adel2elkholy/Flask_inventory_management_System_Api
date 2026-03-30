@@ -59,3 +59,5 @@ in tasks requiring dynamic scheduling like taking scdule from user this is good 
 # ariadne 
 * integratig ariadne  for for Graphql api with flask 
 
+# Flask-Limiter 
+* flask limiter is python package for limiting request to yourapi  to prrvent BrroutForce attacks 
