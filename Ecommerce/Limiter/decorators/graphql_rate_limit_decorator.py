@@ -28,9 +28,12 @@ def graphql_rate_limit(limit=5, window=60):  # five requse per Second
                     message="Too many requests. Please try again later.",
                     extensions=extensions,
                 )
-
+            # mo
             return func(obj, info, **kwargs)
 
         return wrapper
 
     return decorator
+
+
+print("hello")
