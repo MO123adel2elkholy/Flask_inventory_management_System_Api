@@ -9,7 +9,7 @@ load_dotenv()
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_ENV = os.getenv("FLASK_ENV")
-    # DEBUG = os.getenv("DEBUG")
+    DEBUG = os.getenv("DEBUG", True)
     DEBUG = True
     # Flask-Mail settings
     MAIL_SERVER = "smtp.gmail.com"
@@ -40,7 +40,7 @@ class DevelopmentConfig(Config):
 
 
 class ProductionConfig(Config):
-    SECRET_KEY = "Product Key "
+    SECRET_KEY = os.getenv("SECRET_KEY")
     FLASK_ENV = "Production"
     DEBUG = False
 

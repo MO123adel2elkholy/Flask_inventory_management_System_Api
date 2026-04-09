@@ -46,7 +46,7 @@ mail = Mail()
 
 
 def create_app(config_type=os.getenv("Config_Type")):
-    app = Flask(__name__, template_folder="../templates")
+    app = Flask(__name__, template_folder="../templates", static_folder="../static")
 
     app.config.from_object(config_type)
 
@@ -86,9 +86,11 @@ def create_app(config_type=os.getenv("Config_Type")):
 
 def register_blueprint(app):
 
-    from Ecommerce.apps.inventory import inventory_category_api_blueprint  # noqa: F401
-    from Ecommerce.apps.inventory import inventory_prodcut_api_blueprint  # noqa: F401
-    from Ecommerce.apps.inventory import inventory_user_api_blueprint  # noqa: F401                       # noqa: F401; noqa: F401; noqa: F401; noqa: F401
+    from Ecommerce.apps.inventory import (
+        inventory_category_api_blueprint,  # noqa: F401
+        inventory_prodcut_api_blueprint,  # noqa: F401
+        inventory_user_api_blueprint,  # noqa: F401                       # noqa: F401; noqa: F401; noqa: F401; noqa: F401
+    )
 
     app.register_blueprint(inventory_user_api_blueprint, url_prefix="/api")
     app.register_blueprint(inventory_category_api_blueprint, url_prefix="/api")
