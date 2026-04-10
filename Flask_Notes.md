@@ -50,6 +50,7 @@ INFO ```
 
 
 
+
 # clery RedBeat
 * celery red beast is used for controlling Schedule (Dynamic schedule )
 in tasks requiring dynamic scheduling like taking scdule from user this is good for producttion level rather than celery beat 
@@ -61,3 +62,7 @@ in tasks requiring dynamic scheduling like taking scdule from user this is good 
 
 # Flask-Limiter 
 * flask limiter is python package for limiting request to yourapi  to prrvent BrroutForce attacks 
+
+
+# Flask-dance 
+* flask is third party python package thats Enaples us for social authentication providers like github google etc  
