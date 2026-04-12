@@ -10,4 +10,7 @@ inventory_prodcut_api_blueprint = Blueprint("inventory_prodcut_api_blueprint", _
 
 inventory_user_api_blueprint = Blueprint("inventory_user_api_blueprint", __name__)
 
-from .router import category, user  # noqa: F401
+
+inventory_auth_api_blueprint = Blueprint("inventory_auth_api_blueprint", __name__)
+
+from .router import auth, category, user  # noqa: F401
