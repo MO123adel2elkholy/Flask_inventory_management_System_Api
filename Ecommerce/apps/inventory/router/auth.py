@@ -3,7 +3,10 @@ import os
 from flask import jsonify, redirect, request, session, url_for
 from flask_dance.contrib.github import github, make_github_blueprint
 from flask_dance.contrib.google import google, make_google_blueprint
+from werkzeug.security import generate_password_hash
 
+from Ecommerce.apps import database as db
+from Ecommerce.apps.models.inventory_models import User
 from Ecommerce.tasks.models_Email_notification import send_email_task
 from Ecommerce.utils.token import generate_token, verify_token
 
@@ -95,11 +98,8 @@ def verify_email(token):
 @inventory_auth_api_blueprint.route("/forgot-password", methods=["POST"])
 def forgot_password():
     email = request.json["email"]
-
     token = generate_token(email)
-
     reset_link = f"http://127.0.0.1:5000/api/reset-password/{token}"
-
     send_email_task.delay(
         subject="Reset Password",
         recipients=[email],
@@ -113,12 +113,28 @@ def reset_password(token):
     email = verify_token(token)
 
     if not email:
-        return {"message": "Invalid or expired token"}
+        return {"message": "Invalid or expired token"}, 400
 
-    new_password = request.json["password"]
+    user = User.query.filter_by(email=email).first()
 
-    # hash password + update DB
-    return {"message": f"Password updated successfully New Password is {new_password}"}
+    if not user:
+        return {"message": "User not found"}, 404
+
+    data = request.get_json()
+
+    if not data or "password" not in data:
+        return {"message": "Password is required"}, 400
+
+    new_password = data["password"]
+
+    if len(new_password) < 6:
+        return {"message": "Password too short"}, 400
+
+    user.password = generate_password_hash(new_password)
+
+    db.session.commit()
+
+    return {"message": "Password updated successfully"}
 
 
 print("End of file ")

@@ -15,7 +15,7 @@ def generate_token(email):
     return serializer.dumps(email, salt="email-confirm")
 
 
-def verify_token(token, max_age=3600):
+def verify_token(token, max_age=600):
     try:
         email = serializer.loads(token, salt="email-confirm", max_age=max_age)
         return email
