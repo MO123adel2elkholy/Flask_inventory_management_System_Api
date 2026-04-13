@@ -1,8 +1,11 @@
 import os
 
-from flask import jsonify, redirect, session, url_for
+from flask import jsonify, redirect, request, session, url_for
 from flask_dance.contrib.github import github, make_github_blueprint
 from flask_dance.contrib.google import google, make_google_blueprint
+
+from Ecommerce.tasks.models_Email_notification import send_email_task
+from Ecommerce.utils.token import generate_token, verify_token
 
 from .. import inventory_auth_api_blueprint  # noqa: F401
 
@@ -74,6 +77,48 @@ def github_login():
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
+
+@inventory_auth_api_blueprint.route(
+    "/verify-email/<token>", methods=["GET"], endpoint="Email-vervication"
+)
+def verify_email(token):
+    email = verify_token(token)
+
+    if not email:
+        return {"message": "Invalid or expired token"}
+
+    # هنا update user in DB → is_verified = True
+    return {"message": f"Email verified: {email}"}
+
+
+@inventory_auth_api_blueprint.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    email = request.json["email"]
+
+    token = generate_token(email)
+
+    reset_link = f"http://127.0.0.1:5000/api/reset-password/{token}"
+
+    send_email_task.delay(
+        subject="Reset Password",
+        recipients=[email],
+        body=f"Click here to reset password: {reset_link}",
+    )
+    return {"reset_link": f"http://127.0.0.1:5000/api/reset-password/{token}"}
+
+
+@inventory_auth_api_blueprint.route("/reset-password/<token>", methods=["POST"])
+def reset_password(token):
+    email = verify_token(token)
+
+    if not email:
+        return {"message": "Invalid or expired token"}
+
+    new_password = request.json["password"]
+
+    # hash password + update DB
+    return {"message": f"Password updated successfully New Password is {new_password}"}
 
 
 print("End of file ")

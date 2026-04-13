@@ -12,6 +12,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from Ecommerce.apps import database as db
 from Ecommerce.apps.models.inventory_models import User
 from Ecommerce.apps.schema.new_schema import UserSchemaAuto
+from Ecommerce.tasks.models_Email_notification import send_email_task
+from Ecommerce.utils.token import generate_token
 
 # from Ecommerce.Exceptions import APIException
 from .. import inventory_user_api_blueprint
@@ -79,4 +81,11 @@ def create_user(data):
     user.password = hashed_password
     db.session.add(user)
     db.session.commit()
+    db.session.refresh(user)
+    token = generate_token(email=email)
+    send_email_task.delay(
+        subject="Email verivication",
+        recipients=[email],
+        body=f"http://127.0.0.1:5000/api/verify-email/{token}",
+    )
     return user
