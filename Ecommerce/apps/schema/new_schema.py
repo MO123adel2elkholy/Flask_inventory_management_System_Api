@@ -1,6 +1,6 @@
 # Ecommerce.apps import marshmallow
 from flask_marshmallow import Marshmallow
-from marshmallow import fields
+from marshmallow import Schema, fields
 
 from Ecommerce.apps.models.inventory_models import (
     Attribute,
@@ -43,6 +43,11 @@ class CategorySchemaAutoCrete(ma.SQLAlchemyAutoSchema):
         model = Category
         load_instance = True
         include_fk = True
+
+
+class CategoryPaginationSchema(Schema):
+    data = fields.List(fields.Nested(CategorySchemaAutoCrete))
+    meta = fields.Dict()
 
 
 # Base schemas using ma.SQLAlchemyAutoSchema for automatic field generation

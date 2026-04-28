@@ -65,4 +65,7 @@ in tasks requiring dynamic scheduling like taking scdule from user this is good 
 
 
 # Flask-dance 
-* flask is third party python package thats Enaples us for social authentication providers like github google etc  
+* flask is third party python package thats Enaples us for social authentication providers like github google etc  \
+
+# flask-cache
+* flask cache is python package for caching in flask application to improve performance and reduce load on server and database by storing frequently accessed data in memory or other storage backends

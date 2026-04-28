@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from apifairy import body, response
 from celery import current_app
-from flask import request
+from flask import jsonify, request
 from flask_jwt_extended import jwt_required
 from redbeat import RedBeatSchedulerEntry
 
@@ -18,7 +18,6 @@ from Ecommerce.apps.schema.new_schema import (
     productimage_schema,
 )
 from Ecommerce.tasks.task import Sleeping, make_image  # noqa: F401
-from Ecommerce.utils.cash_key import categoriess_cache_key
 
 # from Ecommerce.Exceptions import APIException
 from .. import inventory_category_api_blueprint, inventory_prodcut_api_blueprint
@@ -31,12 +30,41 @@ products_schema = ProductSchema(many=True)
 categoryies_schema = CategorySchema(many=True)
 
 
+# @inventory_category_api_blueprint.route("/category", methods=["GET"])
+# @jwt_required()
+# @cache.cached(timeout=120, key_prefix=categoriess_cache_key)
+# @response(CategorySchemaAutoCrete(many=True))
+# def category():
+
+#     return Category.query.all()
+
+
+def categoriess_cache_keies():
+    page = request.args.get("page", 1)
+    per_page = request.args.get("per_page", 10)
+    return f"categories:{page}:{per_page}"
+
+
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
-@cache.cached(timeout=120, key_prefix=categoriess_cache_key)
-@response(CategorySchemaAutoCrete(many=True))
+@cache.cached(timeout=120, key_prefix=categoriess_cache_keies)
 def category():
-    return Category.query.all()
+    page = request.args.get("page", 1, type=int)
+    per_page = min(request.args.get("per_page", 10, type=int), 50)
+
+    pagination = Category.query.paginate(page=page, per_page=per_page, error_out=False)
+
+    result = {
+        "data": CategorySchemaAutoCrete(many=True).dump(pagination.items),
+        "meta": {
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "total": pagination.total,
+            "per_page": per_page,
+        },
+    }
+
+    return jsonify(result)
 
 
 @inventory_prodcut_api_blueprint.route("/product", methods=["GET"])
