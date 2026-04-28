@@ -32,7 +32,7 @@ categoryies_schema = CategorySchema(many=True)
 
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
-@cache.cached(timeout=5)
+@cache.cached(timeout=120)
 @response(CategorySchemaAutoCrete(many=True))
 def category():
     return Category.query.all()

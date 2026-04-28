@@ -19,7 +19,8 @@ class Config:
     MAIL_USERNAME = os.getenv("MAIL_USERNAME")  # استخدم env var
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")  # استخدم env var
     MAIL_DEFAULT_SENDER = ("Inventory System", MAIL_USERNAME)
-    CACHE_TYPE = "simple"
+    CACHE_TYPE = "RedisCache"
+    CACHE_REDIS_URL = "redis://localhost:6379/0"
 
 
 class DevelopmentConfig(Config):
