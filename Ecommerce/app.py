@@ -9,7 +9,7 @@ from flask_jwt_extended import JWTManager
 from werkzeug.security import check_password_hash
 
 from Ecommerce.admin.setup import Create_admin
-from Ecommerce.apps import create_app
+from Ecommerce.apps import cache, create_app
 from Ecommerce.apps.models.inventory_models import User
 from Ecommerce.chat import socketio
 from Ecommerce.chat.config import CHAT_ROOMS
@@ -88,8 +88,9 @@ def handle_api_exception(e):
 # Routes
 @app.route("/", endpoint="index")
 @limiter.limit("10/minute")
+@cache.cached(timeout=10)
 def hello():
-    return "<h1>Welcome To Flask Development</h1>"
+    return f"<h1>Welcome To Flask Development {random.randint(1, 1000)}</h1>"
 
 
 # GraphQL

@@ -1,6 +1,7 @@
 import sqlalchemy as DataBase
 from dotenv import load_dotenv
 from flask import Flask
+from flask_caching import Cache
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -43,6 +44,7 @@ marshmallow = Marshmallow()
 apifairyobj = APIFairy()
 
 mail = Mail()
+cache = Cache()
 
 
 def create_app(config_type=os.getenv("Config_Type")):
@@ -77,6 +79,7 @@ def create_app(config_type=os.getenv("Config_Type")):
     }
     celery_init_app(app)
     mail.init_app(app)
+    cache.init_app(app)
 
     return app
 

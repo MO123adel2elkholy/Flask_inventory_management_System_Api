@@ -7,6 +7,7 @@ from flask import request
 from flask_jwt_extended import jwt_required
 from redbeat import RedBeatSchedulerEntry
 
+from Ecommerce.apps import cache
 from Ecommerce.apps import database as db
 from Ecommerce.apps.models.inventory_models import Category, Product, ProductImage
 from Ecommerce.apps.schema.new_schema import (
@@ -31,6 +32,7 @@ categoryies_schema = CategorySchema(many=True)
 
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
+@cache.cached(timeout=5)
 @response(CategorySchemaAutoCrete(many=True))
 def category():
     return Category.query.all()
