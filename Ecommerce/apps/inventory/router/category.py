@@ -18,6 +18,7 @@ from Ecommerce.apps.schema.new_schema import (
     productimage_schema,
 )
 from Ecommerce.tasks.task import Sleeping, make_image  # noqa: F401
+from Ecommerce.utils.cash_key import categoriess_cache_key
 
 # from Ecommerce.Exceptions import APIException
 from .. import inventory_category_api_blueprint, inventory_prodcut_api_blueprint
@@ -32,7 +33,7 @@ categoryies_schema = CategorySchema(many=True)
 
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
-@cache.cached(timeout=120)
+@cache.cached(timeout=120, key_prefix=categoriess_cache_key)
 @response(CategorySchemaAutoCrete(many=True))
 def category():
     return Category.query.all()
@@ -62,6 +63,7 @@ def create_category(data):
     category = Category(**data)
     db.session.add(category)
     db.session.commit()
+    cache.delete("categories_list")
     return category
 
 
