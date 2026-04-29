@@ -92,6 +92,10 @@ def verify_email(token):
         return {"message": "Invalid or expired token"}
 
     # هنا update user in DB → is_verified = True
+    verified_user = User.query.filter_by(email=email).first()
+    verified_user.is_verivied = True
+    db.session.commit()
+
     return {"message": f"Email verified: {email}"}
 
 

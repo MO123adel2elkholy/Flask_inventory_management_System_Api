@@ -18,6 +18,7 @@ from Ecommerce.apps.schema.new_schema import (
     productimage_schema,
 )
 from Ecommerce.tasks.task import Sleeping, make_image  # noqa: F401
+from Ecommerce.utils.builders import apply_query
 from Ecommerce.utils.cash_key import categories_cache_keies, invalidate_categories_cache
 
 # from Ecommerce.Exceptions import APIException
@@ -29,28 +30,6 @@ product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
 categoryies_schema = CategorySchema(many=True)
-
-
-def apply_query(query, args, model):
-
-    page = args.get("page", 1, type=int)
-    per_page = min(args.get("per_page", 10, type=int), 50)
-
-    search = args.get("search")
-
-    if search and hasattr(model, "name"):
-        query = query.filter(model.name.ilike(f"%{search.strip()}%"))
-
-    sort_by = args.get("sort_by", "id")
-    order = args.get("order", "asc")
-
-    if hasattr(model, sort_by):
-        column = getattr(model, sort_by)
-        query = query.order_by(column.desc() if order == "desc" else column.asc())
-
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-
-    return pagination  #
 
 
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
