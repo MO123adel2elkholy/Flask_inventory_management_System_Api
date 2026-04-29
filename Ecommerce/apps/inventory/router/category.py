@@ -18,6 +18,7 @@ from Ecommerce.apps.schema.new_schema import (
     productimage_schema,
 )
 from Ecommerce.tasks.task import Sleeping, make_image  # noqa: F401
+from Ecommerce.utils.cash_key import categories_cache_keies, invalidate_categories_cache
 
 # from Ecommerce.Exceptions import APIException
 from .. import inventory_category_api_blueprint, inventory_prodcut_api_blueprint
@@ -39,32 +40,72 @@ categoryies_schema = CategorySchema(many=True)
 #     return Category.query.all()
 
 
-def categoriess_cache_keies():
-    page = request.args.get("page", 1)
-    per_page = request.args.get("per_page", 10)
-    return f"categories:{page}:{per_page}"
-
-
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
-@cache.cached(timeout=120, key_prefix=categoriess_cache_keies)
+@cache.cached(timeout=50, key_prefix=categories_cache_keies)
 def category():
+
+    # -------------------
+    # pagination params
+    # -------------------
     page = request.args.get("page", 1, type=int)
     per_page = min(request.args.get("per_page", 10, type=int), 50)
 
-    pagination = Category.query.paginate(page=page, per_page=per_page, error_out=False)
+    # -------------------
+    # search param
+    # -------------------
+    search = request.args.get("search", None)
 
-    result = {
-        "data": CategorySchemaAutoCrete(many=True).dump(pagination.items),
-        "meta": {
-            "page": pagination.page,
-            "pages": pagination.pages,
-            "total": pagination.total,
-            "per_page": per_page,
-        },
-    }
+    # -------------------
+    # sorting params
+    # -------------------
+    sort_by = request.args.get("sort_by", "id")  # default
+    order = request.args.get("order", "asc")  # asc | desc
 
-    return jsonify(result)
+    # -------------------
+    # base query
+    # -------------------
+    query = Category.query
+
+    # -------------------
+    # SEARCH
+    # -------------------
+    if search:
+        query = query.filter(Category.name.ilike(f"%{search}%"))
+        if query.count() == 0:
+            return jsonify(
+                {"meassge": f" No Categories found with this Name  {search}"}
+            ), 404
+
+    # -------------------
+    # SORTING
+    # -------------------
+    if hasattr(Category, sort_by):
+        column = getattr(Category, sort_by)
+
+        if order == "desc":
+            column = column.desc()
+        else:
+            column = column.asc()
+
+        query = query.order_by(column)
+
+    # -------------------
+    # PAGINATION
+    # -------------------
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return jsonify(
+        {
+            "data": CategorySchemaAutoCrete(many=True).dump(pagination.items),
+            "meta": {
+                "page": pagination.page,
+                "pages": pagination.pages,
+                "total": pagination.total,
+                "per_page": per_page,
+            },
+        }
+    )
 
 
 @inventory_prodcut_api_blueprint.route("/product", methods=["GET"])
@@ -91,7 +132,7 @@ def create_category(data):
     category = Category(**data)
     db.session.add(category)
     db.session.commit()
-    cache.delete("categories_list")
+    invalidate_categories_cache()
     return category
 
 
