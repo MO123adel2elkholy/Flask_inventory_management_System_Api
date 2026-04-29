@@ -31,81 +31,41 @@ products_schema = ProductSchema(many=True)
 categoryies_schema = CategorySchema(many=True)
 
 
-# @inventory_category_api_blueprint.route("/category", methods=["GET"])
-# @jwt_required()
-# @cache.cached(timeout=120, key_prefix=categoriess_cache_key)
-# @response(CategorySchemaAutoCrete(many=True))
-# def category():
+def apply_query(query, args, model):
 
-#     return Category.query.all()
+    page = args.get("page", 1, type=int)
+    per_page = min(args.get("per_page", 10, type=int), 50)
+
+    search = args.get("search")
+
+    if search and hasattr(model, "name"):
+        query = query.filter(model.name.ilike(f"%{search.strip()}%"))
+
+    sort_by = args.get("sort_by", "id")
+    order = args.get("order", "asc")
+
+    if hasattr(model, sort_by):
+        column = getattr(model, sort_by)
+        query = query.order_by(column.desc() if order == "desc" else column.asc())
+
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    return pagination  #
 
 
 @inventory_category_api_blueprint.route("/category", methods=["GET"])
 @jwt_required()
 @cache.cached(timeout=50, key_prefix=categories_cache_keies)
 def category():
-
-    # -------------------
-    # pagination params
-    # -------------------
-    page = request.args.get("page", 1, type=int)
-    per_page = min(request.args.get("per_page", 10, type=int), 50)
-
-    # -------------------
-    # search param
-    # -------------------
-    search = request.args.get("search", None)
-
-    # -------------------
-    # sorting params
-    # -------------------
-    sort_by = request.args.get("sort_by", "id")  # default
-    order = request.args.get("order", "asc")  # asc | desc
-
-    # -------------------
-    # base query
-    # -------------------
-    query = Category.query
-
-    # -------------------
-    # SEARCH
-    # -------------------
-    if search:
-        query = query.filter(Category.name.ilike(f"%{search}%"))
-        if query.count() == 0:
-            return jsonify(
-                {"meassge": f" No Categories found with this Name  {search}"}
-            ), 404
-
-    # -------------------
-    # SORTING
-    # -------------------
-    if hasattr(Category, sort_by):
-        column = getattr(Category, sort_by)
-
-        if order == "desc":
-            column = column.desc()
-        else:
-            column = column.asc()
-
-        query = query.order_by(column)
-
-    # -------------------
-    # PAGINATION
-    # -------------------
-    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
-
-    return jsonify(
-        {
-            "data": CategorySchemaAutoCrete(many=True).dump(pagination.items),
-            "meta": {
-                "page": pagination.page,
-                "pages": pagination.pages,
-                "total": pagination.total,
-                "per_page": per_page,
-            },
-        }
-    )
+    pagination = apply_query(Category.query, request.args, Category)
+    return {
+        "data": CategorySchemaAutoCrete(many=True).dump(pagination.items),
+        "meta": {
+            "page": pagination.page,
+            "pages": pagination.pages,
+            "total": pagination.total,
+        },
+    }
 
 
 @inventory_prodcut_api_blueprint.route("/product", methods=["GET"])
