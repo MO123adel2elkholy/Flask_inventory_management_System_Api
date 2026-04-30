@@ -1,16 +1,18 @@
 import os
 
-from flask import jsonify, redirect, request, session, url_for
+from flask import jsonify, redirect, render_template, request, url_for
 from flask_dance.contrib.github import github, make_github_blueprint
 from flask_dance.contrib.google import google, make_google_blueprint
-from werkzeug.security import generate_password_hash
+from flask_login import login_user, logout_user
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from Ecommerce.apps import database as db
 from Ecommerce.apps.models.inventory_models import User
+from Ecommerce.Limiter.limiter import limiter
 from Ecommerce.tasks.models_Email_notification import send_email_task
 from Ecommerce.utils.token import generate_token, verify_token
 
-from .. import inventory_auth_api_blueprint  # noqa: F401
+from .. import inventory_auth_api_blueprint
 
 
 @inventory_auth_api_blueprint.route("/auth", methods=["GET"])
@@ -76,12 +78,6 @@ def github_login():
 # {"avatar_url":"https://avatars.githubusercontent.com/u/100943707?v=4","bio":"python backend developer  (Django - fastapi -flask) ","blog":"","company":"monufia university","created_at":"2022-03-04T12:58:09Z","email":null,"events_url":"https://api.github.com/users/MO123adel2elkholy/events{/privacy}","followers":0,"followers_url":"https://api.github.com/users/MO123adel2elkholy/followers","following":2,"following_url":"https://api.github.com/users/MO123adel2elkholy/following{/other_user}","gists_url":"https://api.github.com/users/MO123adel2elkholy/gists{/gist_id}","gravatar_id":"","hireable":true,"html_url":"https://github.com/MO123adel2elkholy","id":100943707,"location":"Cairo ","login":"MO123adel2elkholy","name":"mahmoud adel","node_id":"U_kgDOBgRHWw","notification_email":null,"organizations_url":"https://api.github.com/users/MO123adel2elkholy/orgs","public_gists":0,"public_repos":26,"received_events_url":"https://api.github.com/users/MO123adel2elkholy/received_events","repos_url":"https://api.github.com/users/MO123adel2elkholy/repos","site_admin":false,"starred_url":"https://api.github.com/users/MO123adel2elkholy/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/MO123adel2elkholy/subscriptions","twitter_username":null,"type":"User","updated_at":"2026-03-24T02:57:42Z","url":"https://api.github.com/users/MO123adel2elkholy","user_view_type":"public"}
 
 
-@inventory_auth_api_blueprint.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("index"))
-
-
 @inventory_auth_api_blueprint.route(
     "/verify-email/<token>", methods=["GET"], endpoint="Email-vervication"
 )
@@ -142,3 +138,31 @@ def reset_password(token):
 
 
 print("End of file ")
+
+
+@inventory_auth_api_blueprint.route("/login", methods=["GET", "POST"], endpoint="login")
+@limiter.limit("10/minute")
+def login():
+
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+
+            # 🔥 redirect للـ admin
+            return redirect(url_for("admin.index"))
+
+        return render_template("admin_login.html", error="Invalid credentials")
+
+    return render_template("admin_login.html")
+
+
+@inventory_auth_api_blueprint.route("/logout", methods=["GET"], endpoint="logout")
+def logout():
+    """Logout endpoint"""
+    logout_user()
+    return {"message": "Logged out successfully"}, 200

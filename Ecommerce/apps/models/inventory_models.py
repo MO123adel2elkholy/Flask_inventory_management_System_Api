@@ -152,19 +152,18 @@ class ProductLine_Attribute(db.Model):
     productline_id = Column(Integer, ForeignKey("productline.id"))
 
 
-class User(db.Model, UserMixin):
+class User(UserMixin, db.Model):
     """Model for user accounts."""
 
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False, unique=False)
-    email = db.Column(db.String(40), unique=True, nullable=False)
-    password = db.Column(
-        db.String(200), primary_key=False, unique=False, nullable=False
-    )
-    is_admin = Column(Boolean, default=False)
-    is_verivied = Column(Boolean, default=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)  # or password_hash
+    is_admin = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=True)
+    is_verfied = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return "<User {}>".format(self.username)
