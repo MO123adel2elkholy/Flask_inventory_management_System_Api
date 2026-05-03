@@ -61,7 +61,9 @@ from Ecommerce.apps.models.inventory_models import (
 def Create_admin(app: Flask):
     # Init admin without template_mode for compatibility
     admin = Admin(
-        app, name="Inventory Management System Admin", index_view=AdminHomePageView()
+        app,
+        name="Inventory Management System Admin",
+        index_view=AdminHomePageView(),
     )
 
     # Register views - ALL using SecureModelView for security

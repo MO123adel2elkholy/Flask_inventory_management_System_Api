@@ -1,9 +1,11 @@
+import json
 import os
 import random
+import time
 
 from ariadne import graphql_sync, load_schema_from_path, make_executable_schema
 from dotenv import load_dotenv
-from flask import jsonify, render_template, request, session
+from flask import Response, jsonify, render_template, request, session
 from flask_httpauth import HTTPBasicAuth
 from flask_jwt_extended import JWTManager
 from werkzeug.security import check_password_hash
@@ -92,6 +94,24 @@ def graphql_server():
     data = request.get_json()
     success, result = graphql_sync(schema, data, context_value=request, debug=True)
     return jsonify(result)
+
+
+def event_stream():
+    while True:
+        data = {"message": "Hello from server", "time": time.time()}
+
+        yield f"data: {json.dumps(data)}\n\n"
+        time.sleep(500)
+
+
+@app.route("/events")
+def sse():
+    return Response(event_stream(), mimetype="text/event-stream")
+
+
+@app.route("/response")
+def SSE_demo():
+    return render_template("sse.html")
 
 
 # ONLY RUN SOCKETIO AT THE END
