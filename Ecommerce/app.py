@@ -17,6 +17,7 @@ from Ecommerce.chat.config import CHAT_ROOMS
 from Ecommerce.Exceptions import APIException
 from Ecommerce.graphql.resolvers.inventory_resover import mutation, product_obj, query
 from Ecommerce.Limiter.limiter import init_app, limiter
+from Ecommerce.utils.decorators.admin import admin_required
 
 load_dotenv()
 
@@ -110,6 +111,7 @@ def sse():
 
 
 @app.route("/response")
+@admin_required
 def SSE_demo():
     return render_template("sse.html")
 

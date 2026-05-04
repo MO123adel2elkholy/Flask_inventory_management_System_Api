@@ -1,9 +1,9 @@
 import os
 
-from flask import jsonify, redirect, render_template, request, url_for
+from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_dance.contrib.github import github, make_github_blueprint
 from flask_dance.contrib.google import google, make_google_blueprint
-from flask_login import login_user, logout_user
+from flask_login import login_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from Ecommerce.apps import database as db
@@ -153,7 +153,14 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)
 
-            # 🔥 redirect للـ admin
+            # store session manually if انت بتستخدم session
+            session["user"] = {"id": user.id, "is_admin": user.is_admin}
+
+            next_url = request.args.get("next")
+
+            if next_url:
+                return redirect(next_url)
+
             return redirect(url_for("admin.index"))
 
         return render_template("admin_login.html", error="Invalid credentials")
@@ -164,5 +171,6 @@ def login():
 @inventory_auth_api_blueprint.route("/logout", methods=["GET"], endpoint="logout")
 def logout():
     """Logout endpoint"""
-    logout_user()
+    session.clear()
+    # logout_user()
     return {"message": "Logged out successfully"}, 200
