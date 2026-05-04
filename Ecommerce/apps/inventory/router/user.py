@@ -6,11 +6,16 @@ from flask.json import jsonify
 
 # Add these imports for authentication
 from flask_httpauth import HTTPBasicAuth
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from Ecommerce.apps import database as db
-from Ecommerce.apps.models.inventory_models import User
+from Ecommerce.apps.models.inventory_models import TokenBlocklist, User
 from Ecommerce.apps.schema.new_schema import UserSchemaAuto
 from Ecommerce.tasks.models_Email_notification import send_email_task
 from Ecommerce.utils.token import generate_token
@@ -30,9 +35,6 @@ def verify_password(username, password):
     if user and check_password_hash(user.password, password):
         return user
     return None
-
-
-# ...existing code...
 
 
 # Add authentication routes to the blueprint
@@ -55,7 +57,36 @@ def jwt_login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 
-@inventory_user_api_blueprint.route("/protected", methods=["GET"])
+@inventory_user_api_blueprint.route("/logout/jwt", methods=["POST"])
+@jwt_required()
+def logout():
+
+    jti = get_jwt()["jti"]
+
+    blocked_token = TokenBlocklist(jti=jti)
+
+    db.session.add(blocked_token)
+    db.session.commit()
+
+    return {"message": "Logged out successfully"}
+
+
+# def loginnew():
+
+#     username = request.json.get("username")
+#     password = request.json.get("password")
+
+#     user = User.query.filter_by(username=username).first()
+
+#     if not user or not check_password_hash(user.password, password):
+#         return {"error": "Invalid credentials"}, 401
+
+#     access_token = create_access_token(identity=user.id)
+
+#     return {"access_token": access_token}
+
+
+@inventory_user_api_blueprint.route("/protectedjwt", methods=["GET"])
 @jwt_required()
 def protected():
     current_user = get_jwt_identity()

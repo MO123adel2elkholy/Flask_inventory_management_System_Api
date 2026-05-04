@@ -175,6 +175,15 @@ def after_insert_product(mapper, connection, target):
     notify_new_product(target)
 
 
+# this model for blacklisting token to handle syste, login functinality via JWT
+
+
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36), nullable=False, unique=True)
+    created_at = db.Column(db.DateTime, server_default=db.text("CURRENT_TIMESTAMP"))
+
+
 # @event.listens_for(Session, "after_commit")
 # def after_commit(session):
 #     for obj in session.new:

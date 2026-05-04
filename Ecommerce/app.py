@@ -33,7 +33,9 @@ app.config["SESSION_COOKIE_SECURE"] = False  # Set to True in production (HTTPS 
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["PERMANENT_SESSION_LIFETIME"] = 86400  # 24 hours
 
+
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 
 # initialize socket
 socketio.init_app(app, cors_allowed_origins="*")

@@ -1,6 +1,5 @@
 import os
 
-import sqlalchemy as DataBase
 from dotenv import load_dotenv
 from flask import Flask
 from flask_caching import Cache
@@ -10,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from Ecommerce.celery_worker import celery_init_app
 from Ecommerce.utils.extensions import login_manager
+from Ecommerce.utils.jwt_handller import jwt
 
 load_dotenv()
 database = SQLAlchemy()
@@ -21,7 +21,6 @@ from apifairy import APIFairy
 from celery.schedules import crontab
 from flask_marshmallow import Marshmallow
 
-database = SQLAlchemy()
 database_migrations = Migrate()
 marshmallow = Marshmallow()
 apifairyobj = APIFairy()
@@ -73,6 +72,9 @@ def create_app(config_type=os.getenv("Config_Type")):
     celery_init_app(app)
     mail.init_app(app)
     cache.init_app(app)
+    jwt.init_app(app)
+    # Ensure callback module is loaded (or keep lazy imports in the callback)
+    import Ecommerce.utils.JWT_callback  # noqa: F401
 
     return app
 

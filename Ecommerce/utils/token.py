@@ -6,7 +6,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 print(f"Your secret Key from envirnment varaibles is => {SECRET_KEY}")
 
+
 serializer = URLSafeTimedSerializer(SECRET_KEY)
+
 
 print(f" User Serializer {serializer}")
 
